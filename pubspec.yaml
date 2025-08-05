@@ -48,6 +48,11 @@ dependencies:
   
   # Arka plan işlemleri için
   workmanager: ^0.5.1
+  
+  # Grafik ve chart kütüphaneleri
+  fl_chart: ^0.68.0
+  syncfusion_flutter_charts: ^24.1.41
+  syncfusion_flutter_gauges: ^24.1.41
 
 dev_dependencies:
   flutter_test:
@@ -72,9 +77,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

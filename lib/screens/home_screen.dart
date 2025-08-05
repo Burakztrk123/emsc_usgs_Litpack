@@ -6,6 +6,11 @@ import '../models/earthquake.dart';
 import '../services/earthquake_service.dart';
 import '../widgets/source_attribution.dart';
 import 'notification_settings_screen.dart';
+import 'earthquake_report_screen.dart';
+import 'my_reports_screen.dart';
+import 'simple_dashboard_screen.dart';
+import 'earthquake_safety_screen.dart';
+import 'earthquake_faq_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -115,6 +120,54 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               });
             },
             tooltip: 'Filtre Seçenekleri',
+          ),
+          IconButton(
+            icon: const Icon(Icons.analytics),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SimpleDashboardScreen(),
+                ),
+              );
+            },
+            tooltip: 'Sismik Dashboard',
+          ),
+          IconButton(
+            icon: const Icon(Icons.assignment),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MyReportsScreen(),
+                ),
+              );
+            },
+            tooltip: 'Bildirimlerim',
+          ),
+          IconButton(
+            icon: const Icon(Icons.security),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EarthquakeSafetyScreen(),
+                ),
+              );
+            },
+            tooltip: 'Güvenlik Rehberi',
+          ),
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EarthquakeFaqScreen(),
+                ),
+              );
+            },
+            tooltip: 'SSS',
           ),
           IconButton(
             icon: const Icon(Icons.notifications),
@@ -243,6 +296,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const EarthquakeReportScreen(),
+            ),
+          );
+          // Eğer bildirim başarıyla kaydedildiyse, bir mesaj göster
+          if (result == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Teşekkürler! Deprem bildiriminiz kaydedildi.'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        },
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.report_problem),
+        label: const Text(
+          'Deprem mi hissettiniz?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -301,8 +381,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(8),
-        itemCount: _earthquakes.length,
+        itemCount: _earthquakes.length + 2, // +2 güvenlik ve SSS kartı için
         itemBuilder: (context, index) {
+          if (index == _earthquakes.length) {
+            // Son eleman: Güvenlik kartı
+            return const EarthquakeSafetyTip();
+          }
+          if (index == _earthquakes.length + 1) {
+            // Son eleman: SSS kartı
+            return const EarthquakeFaqTip();
+          }
           final earthquake = _earthquakes[index];
           return _buildEarthquakeListItem(earthquake);
         },
