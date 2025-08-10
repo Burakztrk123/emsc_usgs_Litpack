@@ -29,6 +29,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   double _minMagnitude = 4.0;
   int _days = 7;
   bool _showFilterOptions = false;
+  
+  // Harita pozisyonu için state değişkenleri
+  LatLng _mapCenter = const LatLng(39.0, 35.0); // Türkiye merkezi
+  double _mapZoom = 5.0;
+  bool _shouldMoveToEarthquake = false;
+  Earthquake? _selectedEarthquake;
+  
+  // Harita yeniden oluşturma için key
+  Key _mapKey = UniqueKey();
 
   @override
   void initState() {
@@ -41,6 +50,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+  
+  // Haritayı belirli bir deprem konumuna taşı
+  void _moveToEarthquake(Earthquake earthquake) {
+    print('Deprem konumuna gidiliyor: ${earthquake.place}');
+    print('Koordinatlar: Lat: ${earthquake.latitude}, Lng: ${earthquake.longitude}');
+    
+    setState(() {
+      _mapCenter = LatLng(earthquake.latitude, earthquake.longitude);
+      _mapZoom = 14.0; // Daha yakın zoom
+      _shouldMoveToEarthquake = false;
+      _selectedEarthquake = null;
+      _mapKey = UniqueKey(); // Haritayı yeniden oluştur
+    });
+    
+    print('Harita state güncellendi - Yeni merkez: $_mapCenter, Zoom: $_mapZoom');
   }
 
   Future<void> _fetchEarthquakes() async {
@@ -586,16 +611,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       );
     }
 
-    // Türkiye'nin merkezi (başlangıç konumu)
-    final LatLng turkeyCenter = const LatLng(39.0, 35.0);
-
     return Stack(
       children: [
         FlutterMap(
+          key: _mapKey, // Harita yeniden oluşturma için key
           mapController: _mapController,
           options: MapOptions(
-            initialCenter: turkeyCenter,
-            initialZoom: 5.0,
+            initialCenter: _mapCenter,
+            initialZoom: _mapZoom,
             minZoom: 3.0,
             maxZoom: 18.0,
             interactionOptions: const InteractionOptions(
@@ -713,7 +736,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               FloatingActionButton.small(
                 heroTag: 'recenter',
                 onPressed: () {
-                  _mapController.move(turkeyCenter, 5.0);
+                  _mapController.move(const LatLng(39.0, 35.0), 5.0);
                 },
                 child: const Icon(Icons.my_location),
               ),
@@ -914,13 +937,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 TextButton.icon(
                                   icon: const Icon(Icons.map, size: 16),
                                   label: const Text('Haritada Göster'),
-                                  onPressed: () {
+                                  onPressed: () async {
+                                    print('Haritada Göster butonuna tıklandı: ${earthquake.place}');
                                     Navigator.pop(context);
+                                    
+                                    // Harita sekmesine geç
                                     _tabController.animateTo(1);
-                                    _mapController.move(
-                                      LatLng(earthquake.latitude, earthquake.longitude),
-                                      8.0,
-                                    );
+                                    
+                                    // Kısa gecikme sonrası haritayı yeniden oluştur
+                                    await Future.delayed(const Duration(milliseconds: 300));
+                                    _moveToEarthquake(earthquake);
                                   },
                                 ),
                               ],

@@ -64,7 +64,7 @@ class Earthquake {
                   ? double.tryParse(depthValue) ?? 0.0 
                   : 0.0;
       
-      // Zaman değerini kontrol et
+      // Zaman değerini kontrol et ve Türkiye saatine çevir
       DateTime time;
       if (json['time'] is int) {
         time = DateTime.fromMillisecondsSinceEpoch(json['time']);
@@ -75,6 +75,9 @@ class Earthquake {
       } else {
         time = DateTime.now();
       }
+      
+      // UTC'den Türkiye saatine çevir (+3 saat)
+      time = time.add(const Duration(hours: 3));
       
       // Yer bilgisini kontrol et
       final place = json['flynn_region'] ?? 
@@ -137,7 +140,7 @@ class Earthquake {
         depth = coordinates[2] is double ? coordinates[2] : coordinates[2] is int ? coordinates[2].toDouble() : 0.0;
       }
       
-      // Zaman değerini kontrol et
+      // Zaman değerini kontrol et ve Türkiye saatine çevir
       DateTime time;
       if (properties['time'] is int) {
         time = DateTime.fromMillisecondsSinceEpoch(properties['time']);
@@ -146,6 +149,9 @@ class Earthquake {
       } else {
         time = DateTime.now();
       }
+      
+      // UTC'den Türkiye saatine çevir (+3 saat)
+      time = time.add(const Duration(hours: 3));
       
       // Yer bilgisini kontrol et
       final place = properties['place'] ?? 'Bilinmeyen Konum';
