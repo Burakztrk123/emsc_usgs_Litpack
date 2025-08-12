@@ -46,6 +46,11 @@ dependencies:
   # Yerel depolama için
   shared_preferences: ^2.2.0
   
+  # SQLite veritabanı için
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  path_provider: ^2.1.1
+  
   # Arka plan işlemleri için
   workmanager: ^0.5.1
   
