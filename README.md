@@ -385,6 +385,33 @@ flutter:
 
 ## 🔧 Yapılandırma
 
+### 📱 iOS Yapılandırması
+iOS için gerekli tüm yapılandırmalar tamamlanmıştır:
+
+#### ✅ Otomatik Yapılandırılanlar
+- **Info.plist**: Konum, network ve bildirim izinleri eklendi
+- **Podfile**: iOS 12.0+ deployment target ve gerekli pod'lar
+- **AppDelegate.swift**: Arka plan işlemleri desteği
+- **SQLite**: iOS'ta native olarak destekleniyor
+
+#### 🔐 İzinler
+- **Konum İzni**: Deprem mesafesi hesaplama için
+- **Arka Plan İzni**: Bildirimler için
+- **Network İzni**: API erişimi için
+- **Bildirim İzni**: Push notification için
+
+#### 🚀 iOS'ta Çalıştırma
+```bash
+# iOS bağımlılıklarını yükle
+cd ios && pod install
+
+# iOS simülatörde çalıştır
+flutter run -d ios
+
+# iOS cihazda çalıştır
+flutter run -d [device-id]
+```
+
 ### Konum Servisleri
 - **GPS İzni**: Mesafe hesaplamaları için konum izinlerini etkinleştirin
 - **Konum Doğruluğu**: Uygulama, yakınlık tabanlı özellikler için GPS kullanarak konumunuzu belirler
