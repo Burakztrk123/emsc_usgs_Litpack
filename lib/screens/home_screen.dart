@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart' hide SourceAttribution;
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
 import '../models/earthquake.dart';
-import '../services/earthquake_service.dart';
+import '../services/earthquake_service_real.dart';
 import '../widgets/source_attribution.dart';
 import 'notification_settings_screen.dart';
 import 'earthquake_report_screen.dart';
@@ -20,14 +21,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
-  final EarthquakeService _earthquakeService = EarthquakeService();
+  final EarthquakeServiceReal _earthquakeService = EarthquakeServiceReal();
   List<Earthquake> _earthquakes = [];
   bool _isLoading = true;
   String _errorMessage = '';
   late TabController _tabController;
   final MapController _mapController = MapController();
-  double _minMagnitude = 4.0;
-  int _days = 7;
+  double _minMagnitude = 2.5; // Daha düşük magnitude
+  int _days = 30; // 30 günlük veri
   bool _showFilterOptions = false;
   
   // Harita pozisyonu için state değişkenleri
@@ -38,17 +39,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   
   // Harita yeniden oluşturma için key
   Key _mapKey = UniqueKey();
+  
+  // 15 dakikalık otomatik güncelleme timer'ı
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _fetchEarthquakes();
+    _startAutoRefresh();
+  }
+  
+  /// Optimized otomatik API sorgusu (10 dakika - production ready)
+  void _startAutoRefresh() {
+    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (timer) {
+      print('🔄 Otomatik güncelleme: 10 dakika geçti, canlı API\'den veri çekiliyor...');
+      _fetchEarthquakes();
+    });
+    print('✅ Otomatik güncelleme başlatıldı: Her 10 dakikada bir canlı API sorgusu (Production)');
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _autoRefreshTimer?.cancel(); // Timer'ı temizle
     super.dispose();
   }
   
@@ -68,7 +83,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     print('Harita state güncellendi - Yeni merkez: $_mapCenter, Zoom: $_mapZoom');
   }
 
+  bool _isFetching = false; // API call protection
+  
   Future<void> _fetchEarthquakes() async {
+    // Eğer zaten API çağrısı yapılıyorsa, yeni çağrıyı engelle
+    if (_isFetching) {
+      print('⚠️ API çağrısı zaten devam ediyor, yeni çağrı engellendi');
+      return;
+    }
+    
+    _isFetching = true; // API çağrısını başlat
+    
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -77,51 +102,46 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     try {
       print('Deprem verileri yükleniyor...');
       
-      // Önce EMSC verilerini dene
-      List<Earthquake> earthquakes = [];
-      try {
-        final emscEarthquakes = await _earthquakeService.getEmscEarthquakes(
-          minMagnitude: _minMagnitude,
-          days: _days,
-        );
-        earthquakes.addAll(emscEarthquakes);
-        print('EMSC verisi yüklendi: ${emscEarthquakes.length} deprem');
-      } catch (emscError) {
-        print('EMSC veri yükleme hatası: $emscError');
-      }
+      // Yeni entegre servisi kullan - Her zaman API'den güncel veri çeker
+      final earthquakes = await _earthquakeService.getAllEarthquakes(
+        limit: 100,
+        minMagnitude: _minMagnitude,
+        days: _days,
+        // forceRefresh kaldırıldı - her zaman güncel veri
+      );
       
-      // Sonra USGS verilerini dene
-      try {
-        final usgsEarthquakes = await _earthquakeService.getUsgsEarthquakes(
-          minMagnitude: _minMagnitude,
-          days: _days,
-        );
-        earthquakes.addAll(usgsEarthquakes);
-        print('USGS verisi yüklendi: ${usgsEarthquakes.length} deprem');
-      } catch (usgsError) {
-        print('USGS veri yükleme hatası: $usgsError');
-      }
+      print('Toplam ${earthquakes.length} deprem verisi yüklendi');
       
       // Hiç veri yoksa hata mesajı göster
       if (earthquakes.isEmpty) {
         setState(() {
-          _errorMessage = 'Hiç deprem verisi bulunamadı. Lütfen internet bağlantınızı kontrol edin.';
+          if (_minMagnitude > 5.0) {
+            _errorMessage = 'Bu büyüklükte (${_minMagnitude.toStringAsFixed(1)}+) güncel deprem bulunamadı.\nFiltre değerini düşürmeyi deneyin (örn: 2.5-4.0).';
+          } else {
+            _errorMessage = 'Hiç deprem verisi bulunamadı.\nİnternet bağlantınızı kontrol edin veya filtreyi değiştirin.';
+          }
           _isLoading = false;
         });
+        _isFetching = false; // API çağrısını tamamla (boş veri durumunda da)
         return;
       }
 
       setState(() {
         _earthquakes = earthquakes;
         _isLoading = false;
+        _mapKey = UniqueKey(); // Haritayı force refresh et
       });
-      print('Toplam ${earthquakes.length} deprem verisi yüklendi');
+      
+      _isFetching = false; // API çağrısını tamamla
+      
     } catch (e) {
       print('Genel hata: $e');
       setState(() {
         _errorMessage = 'Deprem verileri yüklenemedi: $e';
         _isLoading = false;
       });
+      
+      _isFetching = false; // API çağrısını tamamla (hata durumunda da)
     }
   }
 
@@ -138,6 +158,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              _fetchEarthquakes(); // Güncel veri çek
+            },
+            tooltip: 'Yenile',
+          ),
+          IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {
               setState(() {
@@ -146,70 +173,95 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             },
             tooltip: 'Filtre Seçenekleri',
           ),
-          IconButton(
-            icon: const Icon(Icons.analytics),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SimpleDashboardScreen(),
-                ),
-              );
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Daha Fazla',
+            onSelected: (value) {
+              switch (value) {
+                case 'dashboard':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SimpleDashboardScreen(),
+                    ),
+                  );
+                  break;
+                case 'reports':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MyReportsScreen(),
+                    ),
+                  );
+                  break;
+                case 'safety':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EarthquakeSafetyScreen(),
+                    ),
+                  );
+                  break;
+                case 'faq':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EarthquakeFaqScreen(),
+                    ),
+                  );
+                  break;
+                case 'notifications':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationSettingsScreen(),
+                    ),
+                  );
+                  break;
+              }
             },
-            tooltip: 'Sismik Dashboard',
-          ),
-          IconButton(
-            icon: const Icon(Icons.assignment),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyReportsScreen(),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'dashboard',
+                child: ListTile(
+                  leading: Icon(Icons.analytics),
+                  title: Text('Sismik Dashboard'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-              );
-            },
-            tooltip: 'Bildirimlerim',
-          ),
-          IconButton(
-            icon: const Icon(Icons.security),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EarthquakeSafetyScreen(),
+              ),
+              const PopupMenuItem(
+                value: 'reports',
+                child: ListTile(
+                  leading: Icon(Icons.assignment),
+                  title: Text('Bildirimlerim'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-              );
-            },
-            tooltip: 'Güvenlik Rehberi',
-          ),
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EarthquakeFaqScreen(),
+              ),
+              const PopupMenuItem(
+                value: 'safety',
+                child: ListTile(
+                  leading: Icon(Icons.security),
+                  title: Text('Güvenlik Rehberi'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-              );
-            },
-            tooltip: 'SSS',
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationSettingsScreen(),
+              ),
+              const PopupMenuItem(
+                value: 'faq',
+                child: ListTile(
+                  leading: Icon(Icons.help_outline),
+                  title: Text('SSS'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-              );
-            },
-            tooltip: 'Bildirim Ayarları',
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _fetchEarthquakes,
-            tooltip: 'Yenile',
+              ),
+              const PopupMenuItem(
+                value: 'notifications',
+                child: ListTile(
+                  leading: Icon(Icons.notifications),
+                  title: Text('Bildirim Ayarları'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
           ),
         ],
         bottom: TabBar(

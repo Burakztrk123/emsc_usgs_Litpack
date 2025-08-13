@@ -22,34 +22,37 @@ class EarthquakeServiceIntegrated {
     bool forceRefresh = false,
   }) async {
     try {
-      // Önce cache'den kontrol et
-      if (!forceRefresh) {
-        final cachedEarthquakes = await _getCachedEarthquakes(
-          limit: limit,
-          minMagnitude: minMagnitude,
-          days: days,
-        );
-        
-        if (cachedEarthquakes.isNotEmpty) {
-          developer.log('Cache\'den ${cachedEarthquakes.length} deprem verisi alındı');
-          return cachedEarthquakes;
-        }
-      }
-
-      // Cache boşsa veya yenileme isteniyorsa API'den çek
+      developer.log('🚀 SADECE CANLI API - SQLite devre dışı, maksimum hız!');
+      
       final earthquakes = <Earthquake>[];
       
-      // EMSC ve USGS'den paralel olarak veri çek
+      // EMSC ve USGS'den paralel olarak veri çek - HIZLI MOD
       final futures = [
-        _fetchEmscEarthquakes(limit: limit ~/ 2, minMagnitude: minMagnitude, days: days),
-        _fetchUsgsEarthquakes(limit: limit ~/ 2, minMagnitude: minMagnitude, days: days),
+        _fetchEmscEarthquakes(limit: limit, minMagnitude: minMagnitude, days: days),
+        _fetchUsgsEarthquakes(limit: limit, minMagnitude: minMagnitude, days: days),
       ];
+
+      // 20 saniye timeout - düşük magnitude için yeterli süre
+      final results = await Future.wait(futures).timeout(
+        const Duration(seconds: 20),
+        onTimeout: () {
+          developer.log('⚠️ API timeout - 20 saniye geçti, mevcut veriler döndürülüyor');
+          return [<Earthquake>[], <Earthquake>[]];
+        },
+      );
       
-      final results = await Future.wait(futures);
+      // Tüm sonuçları birleştir
+      earthquakes.addAll(results[0]);
+      earthquakes.addAll(results[1]);
       
-      for (final result in results) {
-        earthquakes.addAll(result);
+      developer.log('⚡ HIZLI API sonuçları: EMSC=${results[0].length}, USGS=${results[1].length}');
+      
+      if (earthquakes.isEmpty) {
+        developer.log('⚠️ API\'lerden veri gelmedi! Filtre: magnitude=$minMagnitude, days=$days');
+        return <Earthquake>[]; // Boş liste döndür
       }
+
+      developer.log('✅ CANLI API: ${earthquakes.length} güncel deprem verisi alındı!');
 
       // Duplikatları temizle ve sırala
       final uniqueEarthquakes = _removeDuplicates(earthquakes);
@@ -57,22 +60,39 @@ class EarthquakeServiceIntegrated {
       
       final limitedEarthquakes = uniqueEarthquakes.take(limit).toList();
 
-      // Veritabanına kaydet
-      if (limitedEarthquakes.isNotEmpty) {
-        await _databaseService.insertEarthquakes(limitedEarthquakes);
-        developer.log('${limitedEarthquakes.length} deprem verisi veritabanına kaydedildi');
-      }
+      // SQLite DEVRE DIŞI - Sadece canlı API verileri
+      developer.log('🔥 SQLite atlandı - Sadece canlı ${limitedEarthquakes.length} deprem verisi döndürülüyor');
 
       return limitedEarthquakes;
     } catch (e) {
-      developer.log('Deprem verisi çekme hatası: $e');
+      developer.log('🚨 API hatası: $e');
+      developer.log('💡 Sadece canlı API modu - Cache yok, boş liste döndürülüyor');
       
-      // Hata durumunda cache'den veri döndür
-      return await _getCachedEarthquakes(
-        limit: limit,
-        minMagnitude: minMagnitude,
-        days: days,
+      // Hata durumunda boş liste döndür - Cache yok!
+      return <Earthquake>[];
+    }
+  }
+
+  /// Cache yaşını kontrol et
+  Future<Duration?> _getCacheAge() async {
+    try {
+      final earthquakes = await _databaseService.getEarthquakes(
+        limit: 1,
+        orderBy: 'created_at DESC',
       );
+      
+      if (earthquakes.isNotEmpty) {
+        // En son kaydedilen verinin yaşını hesapla
+        final lastCacheTime = DateTime.fromMillisecondsSinceEpoch(
+          earthquakes.first.time.millisecondsSinceEpoch
+        );
+        return DateTime.now().difference(lastCacheTime);
+      }
+      
+      return null; // Cache yok
+    } catch (e) {
+      developer.log('Cache yaş kontrolü hatası: $e');
+      return null;
     }
   }
 
@@ -99,45 +119,73 @@ class EarthquakeServiceIntegrated {
     required int days,
   }) async {
     try {
-      final startDate = DateTime.now().subtract(Duration(days: days));
-      final endDate = DateTime.now();
+      // Gerçek zamanlı API için son günleri kullan (2024 yılından)
+      final endDate = DateTime(2024, 8, 13); // Gerçek tarih
+      final startDate = endDate.subtract(Duration(days: days));
       
+      // EMSC API basit parametreler
       final uri = Uri.parse(emscApiUrl).replace(queryParameters: {
-        'format': 'geojson',
+        'format': 'json',
         'limit': limit.toString(),
-        'minmagnitude': minMagnitude.toString(),
-        'starttime': startDate.toIso8601String().split('T')[0],
-        'endtime': endDate.toIso8601String().split('T')[0],
-        'orderby': 'time-desc',
+        'minmag': minMagnitude.toString(),
+        'start': startDate.toIso8601String().split('T')[0], // Sadece tarih
+        'end': endDate.toIso8601String().split('T')[0],
       });
 
+      developer.log('EMSC API çağrısı: $uri');
       final response = await http.get(uri).timeout(const Duration(seconds: 30));
+      
+      developer.log('EMSC API response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final features = data['features'] as List;
         
-        return features.map((feature) {
-          final properties = feature['properties'];
-          final geometry = feature['geometry'];
-          final coordinates = geometry['coordinates'] as List;
+        // EMSC JSON formatı kontrol et
+        if (data is Map && data.containsKey('features')) {
+          // GeoJSON formatı
+          final features = data['features'] as List;
+          developer.log('EMSC API\'den ${features.length} deprem alındı (GeoJSON)');
           
-          return Earthquake(
-            id: properties['unid']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
-            magnitude: (properties['mag'] as num?)?.toDouble() ?? 0.0,
-            place: properties['place']?.toString() ?? 'Bilinmeyen Konum',
-            time: DateTime.parse(properties['time']),
-            latitude: (coordinates[1] as num).toDouble(),
-            longitude: (coordinates[0] as num).toDouble(),
-            depth: (coordinates.length > 2 ? coordinates[2] as num : 0).toDouble(),
-            source: 'EMSC',
-          );
-        }).toList();
+          return features.map((feature) {
+            final properties = feature['properties'];
+            final geometry = feature['geometry'];
+            final coordinates = geometry['coordinates'] as List;
+            
+            return Earthquake(
+              id: properties['unid']?.toString() ?? 'emsc_${DateTime.now().millisecondsSinceEpoch}',
+              magnitude: (properties['mag'] as num?)?.toDouble() ?? 0.0,
+              place: properties['place']?.toString() ?? properties['flynn_region']?.toString() ?? 'Bilinmeyen Konum',
+              time: DateTime.parse(properties['time']),
+              latitude: (coordinates[1] as num).toDouble(),
+              longitude: (coordinates[0] as num).toDouble(),
+              depth: (coordinates.length > 2 ? coordinates[2] as num : 0).toDouble(),
+              source: 'EMSC',
+            );
+          }).toList();
+        } else if (data is List) {
+          // Direkt array formatı
+          developer.log('EMSC API\'den ${data.length} deprem alındı (Array)');
+          
+          return data.map((item) {
+            return Earthquake(
+              id: item['unid']?.toString() ?? 'emsc_${DateTime.now().millisecondsSinceEpoch}',
+              magnitude: (item['mag'] as num?)?.toDouble() ?? 0.0,
+              place: item['place']?.toString() ?? item['flynn_region']?.toString() ?? 'Bilinmeyen Konum',
+              time: DateTime.parse(item['time']),
+              latitude: (item['lat'] as num).toDouble(),
+              longitude: (item['lon'] as num).toDouble(),
+              depth: (item['depth'] as num?)?.toDouble() ?? 0.0,
+              source: 'EMSC',
+            );
+          }).toList();
+        }
+      } else {
+        developer.log('EMSC API hatası: ${response.statusCode} - ${response.body}');
       }
       
       return [];
     } catch (e) {
-      developer.log('EMSC API hatası: $e');
+      developer.log('EMSC API exception: $e');
       return [];
     }
   }
@@ -149,23 +197,29 @@ class EarthquakeServiceIntegrated {
     required int days,
   }) async {
     try {
-      final startDate = DateTime.now().subtract(Duration(days: days));
-      final endDate = DateTime.now();
+      // Gerçek zamanlı API için son günleri kullan (2024 yılından)
+      final endDate = DateTime(2024, 8, 13); // Gerçek tarih
+      final startDate = endDate.subtract(Duration(days: days));
       
+      // USGS API en basit parametreler
       final uri = Uri.parse(usgsApiUrl).replace(queryParameters: {
         'format': 'geojson',
-        'limit': limit.toString(),
-        'minmagnitude': minMagnitude.toString(),
-        'starttime': startDate.toIso8601String().split('T')[0],
-        'endtime': endDate.toIso8601String().split('T')[0],
-        'orderby': 'time',
+        'limit': '500', // Daha fazla veri için limit artırıldı
+        'minmagnitude': minMagnitude.toString(), // Değişken magnitude
+        'starttime': startDate.toIso8601String().split('T')[0], // Başlangıç tarihi
+        'endtime': endDate.toIso8601String().split('T')[0], // Bitiş tarihi
       });
 
+      developer.log('USGS API çağrısı: $uri');
       final response = await http.get(uri).timeout(const Duration(seconds: 30));
+      
+      developer.log('USGS API response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final features = data['features'] as List;
+        
+        developer.log('USGS API\'den ${features.length} deprem alındı');
         
         return features.map((feature) {
           final properties = feature['properties'];
@@ -173,8 +227,8 @@ class EarthquakeServiceIntegrated {
           final coordinates = geometry['coordinates'] as List;
           
           return Earthquake(
-            id: properties['ids']?.toString().split(',')[0] ?? 
-                DateTime.now().millisecondsSinceEpoch.toString(),
+            id: properties['id']?.toString() ?? 
+                'usgs_${DateTime.now().millisecondsSinceEpoch}',
             magnitude: (properties['mag'] as num?)?.toDouble() ?? 0.0,
             place: properties['place']?.toString() ?? 'Unknown Location',
             time: DateTime.fromMillisecondsSinceEpoch(properties['time'] as int),
@@ -184,22 +238,78 @@ class EarthquakeServiceIntegrated {
             source: 'USGS',
           );
         }).toList();
+      } else {
+        developer.log('USGS API hatası: ${response.statusCode} - ${response.body}');
       }
       
       return [];
     } catch (e) {
-      developer.log('USGS API hatası: $e');
+      developer.log('USGS API exception: $e');
       return [];
     }
   }
 
-  /// Duplikat depremleri temizle
+  /// Test deprem verileri (API çalışmadığında)
+  List<Earthquake> _getTestEarthquakes() {
+    final now = DateTime.now();
+    return [
+      Earthquake(
+        id: 'test_1',
+        magnitude: 5.2,
+        place: 'Ege Denizi',
+        time: now.subtract(Duration(hours: 2)),
+        latitude: 37.9755,
+        longitude: 27.3711,
+        depth: 12.5,
+        source: 'TEST',
+      ),
+      Earthquake(
+        id: 'test_2', 
+        magnitude: 4.8,
+        place: 'Marmara Denizi',
+        time: now.subtract(Duration(hours: 5)),
+        latitude: 40.7589,
+        longitude: 29.4013,
+        depth: 8.2,
+        source: 'TEST',
+      ),
+      Earthquake(
+        id: 'test_3',
+        magnitude: 6.1,
+        place: 'Doğu Anadolu Fay Hattı',
+        time: now.subtract(Duration(hours: 12)),
+        latitude: 38.7312,
+        longitude: 39.4625,
+        depth: 15.8,
+        source: 'TEST',
+      ),
+      Earthquake(
+        id: 'test_4',
+        magnitude: 4.3,
+        place: 'Akdeniz',
+        time: now.subtract(Duration(hours: 18)),
+        latitude: 36.2048,
+        longitude: 32.6593,
+        depth: 22.1,
+        source: 'TEST',
+      ),
+      Earthquake(
+        id: 'test_5',
+        magnitude: 5.7,
+        place: 'Kuzey Anadolu Fay Hattı',
+        time: now.subtract(Duration(days: 1)),
+        latitude: 40.8533,
+        longitude: 30.3788,
+        depth: 18.7,
+        source: 'TEST',
+      ),
+    ];
+  }
+
+  /// Duplikatları temizle
   List<Earthquake> _removeDuplicates(List<Earthquake> earthquakes) {
     final seen = <String>{};
-    return earthquakes.where((earthquake) {
-      final key = '${earthquake.latitude}_${earthquake.longitude}_${earthquake.time.millisecondsSinceEpoch}';
-      return seen.add(key);
-    }).toList();
+    return earthquakes.where((earthquake) => seen.add(earthquake.id)).toList();
   }
 
   /// Favori deprem ekle

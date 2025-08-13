@@ -38,6 +38,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'EMSC & USGS Deprem Verileri',
       debugShowCheckedModeBanner: false,
+      showPerformanceOverlay: false,
+      showSemanticsDebugger: false,
+      checkerboardRasterCacheImages: false,
+      checkerboardOffscreenLayers: false,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
