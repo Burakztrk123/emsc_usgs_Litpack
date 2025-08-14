@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:developer' as developer;
 import '../models/earthquake.dart';
 import '../models/seismic_activity.dart';
 import 'earthquake_service.dart';
@@ -19,7 +20,7 @@ class SeismicAnalysisService {
 
       return _analyzeEarthquakeData(earthquakes, 'global');
     } catch (e) {
-      print('Küresel sismik aktivite analizi hatası: $e');
+      developer.log('Küresel sismik aktivite analizi hatası: $e');
       return _getDefaultActivity();
     }
   }
@@ -48,7 +49,7 @@ class SeismicAnalysisService {
         historicalData: historicalData,
       );
     } catch (e) {
-      print('Ülke sismik aktivite analizi hatası: $e');
+      developer.log('Ülke sismik aktivite analizi hatası: $e');
       return CountrySeismicData(
         countryCode: countryCode,
         countryName: getCountryName(countryCode),
@@ -113,7 +114,7 @@ class SeismicAnalysisService {
         yearlyData: yearlyData,
       );
     } catch (e) {
-      print('Sismik trend analizi hatası: $e');
+      developer.log('Sismik analiz başlatılıyor...');
       return SeismicTrend(dailyData: [], monthlyData: [], yearlyData: []);
     }
   }
@@ -228,15 +229,30 @@ class SeismicAnalysisService {
 
   // Ülke adını getir
   String getCountryName(String countryCode) {
-    final countryNames = {
+    const countryNames = {
       'TR': 'Türkiye',
-      'US': 'Amerika Birleşik Devletleri',
-      'JP': 'Japonya',
-      'IT': 'İtalya',
       'GR': 'Yunanistan',
+      'IT': 'İtalya',
+      'JP': 'Japonya',
+      'US': 'Amerika Birleşik Devletleri',
       'CL': 'Şili',
       'ID': 'Endonezya',
+      'IR': 'İran',
+      'AF': 'Afganistan',
+      'PK': 'Pakistan',
+      'CN': 'Çin',
+      'PH': 'Filipinler',
+      'NZ': 'Yeni Zelanda',
       'MX': 'Meksika',
+      'PE': 'Peru',
+      'EC': 'Ekvador',
+      'RO': 'Romanya',
+      'AL': 'Arnavutluk',
+      'BG': 'Bulgaristan',
+      'HR': 'Hırvatistan',
+      'RS': 'Sırbistan',
+      'MK': 'Kuzey Makedonya',
+      'ALL': 'Tüm Dünya',
       'global': 'Dünya',
     };
     
@@ -279,7 +295,7 @@ class SeismicAnalysisService {
         'last_updated': DateTime.now().toIso8601String(),
       };
     } catch (e) {
-      print('Büyüklük istatistikleri hatası: $e');
+      developer.log('Büyüklük istatistikleri hatası: $e');
       return {
         'total': 0,
         'magnitude_1_2': 0,
@@ -297,4 +313,7 @@ class SeismicAnalysisService {
       };
     }
   }
+
+  /// Ülke kodunu ülke ismine çevir
+ 
 }

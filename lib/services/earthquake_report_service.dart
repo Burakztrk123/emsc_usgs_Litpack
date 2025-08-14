@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/earthquake_report.dart';
 
@@ -17,7 +18,7 @@ class EarthquakeReportService {
       
       return true;
     } catch (e) {
-      print('Deprem bildirimi kaydedilemedi: $e');
+      developer.log('Deprem bildirimi kaydedilemedi: $e', name: 'EarthquakeReportService');
       return false;
     }
   }
@@ -33,7 +34,7 @@ class EarthquakeReportService {
       final reportsJson = json.decode(reportsString) as List;
       return reportsJson.map((json) => EarthquakeReport.fromJson(json)).toList();
     } catch (e) {
-      print('Deprem bildirimleri yüklenemedi: $e');
+      developer.log('Deprem bildirimleri yüklenemedi: $e', name: 'EarthquakeReportService');
       return [];
     }
   }
@@ -50,7 +51,7 @@ class EarthquakeReportService {
       
       return true;
     } catch (e) {
-      print('Deprem bildirimi silinemedi: $e');
+      developer.log('Deprem bildirimi silinemedi: $e', name: 'EarthquakeReportService');
       return false;
     }
   }
@@ -62,7 +63,7 @@ class EarthquakeReportService {
       await prefs.remove(_reportsKey);
       return true;
     } catch (e) {
-      print('Tüm deprem bildirimleri silinemedi: $e');
+      developer.log('Tüm deprem bildirimleri silinemedi: $e', name: 'EarthquakeReportService');
       return false;
     }
   }

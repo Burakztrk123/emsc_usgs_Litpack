@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:flutter_map/flutter_map.dart' hide SourceAttribution;
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
@@ -54,10 +55,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   /// Optimized otomatik API sorgusu (10 dakika - production ready)
   void _startAutoRefresh() {
     _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (timer) {
-      print('🔄 Otomatik güncelleme: 10 dakika geçti, canlı API\'den veri çekiliyor...');
+      developer.log('⏹️ Otomatik yenileme durduruldu', name: 'HomeScreen');
       _fetchEarthquakes();
     });
-    print('✅ Otomatik güncelleme başlatıldı: Her 10 dakikada bir canlı API sorgusu (Production)');
+    developer.log('🔄 Otomatik yenileme başlatıldı', name: 'HomeScreen');
   }
 
   @override
@@ -69,8 +70,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   
   // Haritayı belirli bir deprem konumuna taşı
   void _moveToEarthquake(Earthquake earthquake) {
-    print('Deprem konumuna gidiliyor: ${earthquake.place}');
-    print('Koordinatlar: Lat: ${earthquake.latitude}, Lng: ${earthquake.longitude}');
+    developer.log('🗺️ Harita görünümüne geçiliyor', name: 'HomeScreen');
+    developer.log('Deprem konumuna gidiliyor: ${earthquake.place}', name: 'HomeScreen');
+    developer.log('Koordinatlar: Lat: ${earthquake.latitude}, Lng: ${earthquake.longitude}', name: 'HomeScreen');
     
     setState(() {
       _mapCenter = LatLng(earthquake.latitude, earthquake.longitude);
@@ -88,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> _fetchEarthquakes() async {
     // Eğer zaten API çağrısı yapılıyorsa, yeni çağrıyı engelle
     if (_isFetching) {
-      print('⚠️ API çağrısı zaten devam ediyor, yeni çağrı engellendi');
+        developer.log('⚠️ API çağrısı zaten devam ediyor, yeni çağrı engellendi', name: 'HomeScreen');
       return;
     }
     
@@ -100,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
 
     try {
-      print('Deprem verileri yükleniyor...');
+      developer.log('🔄 Deprem verileri yenileniyor...', name: 'HomeScreen');
       
       // Yeni entegre servisi kullan - Her zaman API'den güncel veri çeker
       final earthquakes = await _earthquakeService.getAllEarthquakes(
@@ -110,10 +112,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         // forceRefresh kaldırıldı - her zaman güncel veri
       );
       
-      print('Toplam ${earthquakes.length} deprem verisi yüklendi');
+      final filteredEarthquakes = earthquakes.where((earthquake) => earthquake.magnitude >= _minMagnitude).toList();
+      
+      developer.log('🔍 Arama sonucu: ${filteredEarthquakes.length} deprem bulundu', name: 'HomeScreen');
       
       // Hiç veri yoksa hata mesajı göster
-      if (earthquakes.isEmpty) {
+      if (filteredEarthquakes.isEmpty) {
         setState(() {
           if (_minMagnitude > 5.0) {
             _errorMessage = 'Bu büyüklükte (${_minMagnitude.toStringAsFixed(1)}+) güncel deprem bulunamadı.\nFiltre değerini düşürmeyi deneyin (örn: 2.5-4.0).';
@@ -127,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       }
 
       setState(() {
-        _earthquakes = earthquakes;
+        _earthquakes = filteredEarthquakes;
         _isLoading = false;
         _mapKey = UniqueKey(); // Haritayı force refresh et
       });
@@ -135,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _isFetching = false; // API çağrısını tamamla
       
     } catch (e) {
-      print('Genel hata: $e');
+      developer.log('📊 Deprem analizi tamamlandı', name: 'HomeScreen');
       setState(() {
         _errorMessage = 'Deprem verileri yüklenemedi: $e';
         _isLoading = false;
@@ -525,7 +529,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: magnitudeColor.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.9),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -687,7 +691,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   decoration: BoxDecoration(
                     border: Border.all(
                       width: 0.5,
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.red.withValues(alpha: 0.7),
                     ),
                   ),
                   position: DecorationPosition.foreground,
@@ -730,12 +734,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           scale: value,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: markerColor.withOpacity(0.7),
+                              color: Theme.of(context).primaryColor.withAlpha(25),
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.blue.withAlpha(25),
                                   blurRadius: 3,
                                   spreadRadius: 1,
                                 ),

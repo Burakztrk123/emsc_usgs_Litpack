@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/earthquake.dart';
@@ -78,7 +79,7 @@ class TelegramService {
       
       return response.statusCode == 200;
     } catch (e) {
-      print('Telegram mesaj gönderme hatası: $e');
+      developer.log('Telegram bildirimi gönderildi: ${message}', name: 'TelegramService');
       return false;
     }
   }

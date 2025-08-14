@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:workmanager/workmanager.dart';
-import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
+import 'screens/home_screen.dart';
 
 // WorkManager için callback fonksiyonu
 @pragma('vm:entry-point')
@@ -12,7 +13,7 @@ void callbackDispatcher() {
       await NotificationService.checkForNewEarthquakes();
       return true;
     } catch (e) {
-      print('Arka plan görevi hatası: $e');
+      developer.log('Arka plan görevi hatası: $e', name: 'BackgroundTask');
       return false;
     }
   });

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:workmanager/workmanager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/earthquake.dart';
@@ -110,6 +111,7 @@ class NotificationService {
       final distance = LocationService.calculateDistance(userLocation, earthquakeLocation);
       
       await TelegramService.sendEarthquakeNotification(earthquake, distance);
+      developer.log('Yeni deprem bildirimi gönderildi: ${earthquake.place}', name: 'NotificationService');
     }
   }
 }
@@ -133,7 +135,7 @@ void callbackDispatcher() {
         // Telegram bildirimleri gönder
         await NotificationService.sendTelegramNotifications(nearbyEarthquakes);
       } catch (e) {
-        print('Arka plan görevi hatası: $e');
+        developer.log('Arka plan görevi hatası: $e', name: 'NotificationService');
       }
     }
     return true;

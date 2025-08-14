@@ -66,9 +66,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         }
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ayarlar yüklenirken hata: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ayarlar yüklenirken hata: $e')),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;
@@ -86,22 +88,28 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       // Konumu kaydet
       await LocationService.saveUserLocation(position.latitude, position.longitude);
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Konum güncellendi')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Konum alınıyor...')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Konum alınamadı: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Konum alınamadı: $e')),
+        );
+      }
     }
   }
   
   Future<void> _validateBotToken() async {
     final token = _botTokenController.text.trim();
     if (token.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen bir bot token girin')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lütfen tüm alanları doldurun!')),
+        );
+      }
       return;
     }
     
@@ -117,14 +125,17 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         _isValidatingToken = false;
       });
       
-      if (isValid) {
+      if (isValid && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Bot token geçerli')),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bot token geçersiz')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Bot token geçersiz!')),
+          );
+        }
+        return;
       }
     } catch (e) {
       setState(() {
@@ -132,9 +143,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         _isTokenValid = false;
       });
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Token doğrulanamadı: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Token doğrulanamadı: $e')),
+        );
+      }
     }
   }
   
@@ -170,13 +183,20 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         await NotificationService.stopBackgroundTask();
       }
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ayarlar kaydedildi')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ayarlar kaydedildi!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ayarlar kaydedilemedi: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ayarlar kaydedilemedi: $e')),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;

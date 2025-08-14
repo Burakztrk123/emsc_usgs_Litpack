@@ -57,9 +57,11 @@ class _SimpleDashboardScreenState extends State<SimpleDashboardScreen> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Veri yüklenirken hata: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Veri yüklenirken hata: $e')),
+        );
+      }
     }
   }
 
@@ -397,7 +399,7 @@ class _SimpleDashboardScreenState extends State<SimpleDashboardScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         border: Border.all(color: color),
       ),
       child: Column(

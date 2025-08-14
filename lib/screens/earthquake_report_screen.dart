@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import '../models/earthquake_report.dart';
@@ -77,7 +78,7 @@ class _EarthquakeReportScreenState extends State<EarthquakeReportScreen> {
         _locationController.text = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
       });
     } catch (e) {
-      print('Konum alınamadı: $e');
+      developer.log('Konum alınamadı: $e', name: 'EarthquakeReportScreen');
     }
   }
 
@@ -89,13 +90,13 @@ class _EarthquakeReportScreenState extends State<EarthquakeReportScreen> {
       lastDate: DateTime.now(),
     );
 
-    if (date != null) {
+    if (date != null && mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_earthquakeTime),
       );
 
-      if (time != null) {
+      if (time != null && mounted) {
         setState(() {
           _earthquakeTime = DateTime(
             date.year,
@@ -138,31 +139,37 @@ class _EarthquakeReportScreenState extends State<EarthquakeReportScreen> {
         reporterName: _nameController.text.trim(),
       );
 
-      final success = await EarthquakeReportService.saveReport(report);
+      final result = await EarthquakeReportService.saveReport(report);
 
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Deprem bildirimi başarıyla kaydedildi!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context, true);
+      if (result == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Deprem raporu başarıyla kaydedildi!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.of(context).pop();
+        }
       } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Rapor kaydedilemedi. Lütfen tekrar deneyin.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bildirim kaydedilemedi. Lütfen tekrar deneyin.'),
+          SnackBar(
+            content: Text('Hata oluştu: $e'),
             backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Hata oluştu: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     } finally {
       setState(() {
         _isLoading = false;

@@ -32,9 +32,11 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
         _reports.sort((a, b) => b.reportTime.compareTo(a.reportTime)); // En yeni önce
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Bildirimler yüklenemedi: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bildirimler yüklenemedi: $e')),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;
@@ -64,12 +66,12 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 
     if (confirmed == true) {
       final success = await EarthquakeReportService.deleteReport(reportId);
-      if (success) {
+      if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Bildirim silindi')),
         );
         _loadReports();
-      } else {
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Bildirim silinemedi')),
         );

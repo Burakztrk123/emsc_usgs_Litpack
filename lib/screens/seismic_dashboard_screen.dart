@@ -63,9 +63,11 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Veri yüklenirken hata: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Veri yüklenirken hata: $e')),
+        );
+      }
     }
   }
 
@@ -426,7 +428,7 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Büyüklük İstatistikleri - ${_analysisService._getCountryName(_selectedCountry)}',
+              'Büyüklük İstatistikleri - ${_analysisService.getCountryName(_selectedCountry)}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -543,7 +545,7 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
                 Column(
                   children: [
                     Text(
-                      '${(_magnitudeStats!['average_magnitude'] as double).toStringAsFixed(1)}',
+                      (_magnitudeStats!['average_magnitude'] as double).toStringAsFixed(1),
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const Text('Ortalama Büyüklük'),
@@ -552,7 +554,7 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
                 Column(
                   children: [
                     Text(
-                      '${(_magnitudeStats!['max_magnitude'] as double).toStringAsFixed(1)}',
+                      (_magnitudeStats!['max_magnitude'] as double).toStringAsFixed(1),
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const Text('En Büyük'),
