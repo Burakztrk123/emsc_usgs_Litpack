@@ -370,6 +370,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   right: 5,
                   child: SourceAttribution(),
                 ),
+                
+                // Powered by Litpack branding
+                const Positioned(
+                  bottom: 5,
+                  left: 5,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.code,
+                        size: 12,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Powered by Litpack',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

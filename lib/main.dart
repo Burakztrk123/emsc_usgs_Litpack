@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
 import 'package:workmanager/workmanager.dart';
 import 'services/notification_service.dart';
-import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 // WorkManager için callback fonksiyonu
 @pragma('vm:entry-point')
@@ -138,7 +138,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.system,
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }
