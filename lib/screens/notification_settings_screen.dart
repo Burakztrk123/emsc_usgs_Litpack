@@ -156,9 +156,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     final chatId = _chatIdController.text.trim();
     
     if (botToken.isEmpty || chatId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen bot token ve chat ID girin')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lütfen bot token ve chat ID girin')),
+        );
+      }
       return;
     }
     

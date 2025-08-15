@@ -3,14 +3,14 @@ import 'dart:developer' as developer;
 import '../services/seismic_analysis_service.dart';
 import '../models/seismic_activity.dart';
 
-class SeismicDashboardScreen extends StatefulWidget {
-  const SeismicDashboardScreen({super.key});
+class SeismicDashboardModern extends StatefulWidget {
+  const SeismicDashboardModern({super.key});
 
   @override
-  State<SeismicDashboardScreen> createState() => _SeismicDashboardScreenState();
+  State<SeismicDashboardModern> createState() => _SeismicDashboardModernState();
 }
 
-class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
+class _SeismicDashboardModernState extends State<SeismicDashboardModern> {
   final SeismicAnalysisService _analysisService = SeismicAnalysisService();
   bool _isLoading = true;
   SeismicActivity? _globalActivity;

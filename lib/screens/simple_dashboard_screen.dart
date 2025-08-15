@@ -238,11 +238,11 @@ class _SimpleDashboardScreenState extends State<SimpleDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildStatRow('Toplam Deprem', '${_globalActivity!.totalEarthquakes}'),
+                      _buildStatRow('Toplam Deprem', _globalActivity!.totalEarthquakes.toString()),
                       _buildStatRow('4.0+ Büyüklük', '${_globalActivity!.magnitude4Plus}'),
                       _buildStatRow('5.0+ Büyüklük', '${_globalActivity!.magnitude5Plus}'),
                       _buildStatRow('6.0+ Büyüklük', '${_globalActivity!.magnitude6Plus}'),
-                      _buildStatRow('Ortalama Büyüklük', '${_globalActivity!.averageMagnitude.toStringAsFixed(1)}'),
+                      _buildStatRow('Ortalama Büyüklük', _globalActivity!.averageMagnitude.toStringAsFixed(1)),
                     ],
                   ),
                 ),
@@ -275,8 +275,8 @@ class _SimpleDashboardScreenState extends State<SimpleDashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildStatColumn('Toplam', '${_magnitudeStats!['total']}'),
-                _buildStatColumn('Ortalama', '${(_magnitudeStats!['average_magnitude'] as double).toStringAsFixed(1)}'),
-                _buildStatColumn('En Büyük', '${(_magnitudeStats!['max_magnitude'] as double).toStringAsFixed(1)}'),
+                _buildStatColumn('Ortalama', (_magnitudeStats!['average_magnitude'] as double).toStringAsFixed(1)),
+                _buildStatColumn('En Büyük', (_magnitudeStats!['max_magnitude'] as double).toStringAsFixed(1)),
               ],
             ),
           ],

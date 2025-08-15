@@ -114,9 +114,11 @@ class _EarthquakeReportScreenState extends State<EarthquakeReportScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_currentPosition == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Konum bilgisi alınamadı. Lütfen bekleyin veya manuel olarak girin.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Konum bilgisi alınamadı. Lütfen bekleyin veya manuel olarak girin.')),
+        );
+      }
       return;
     }
 

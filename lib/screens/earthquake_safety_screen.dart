@@ -243,7 +243,7 @@ class EarthquakeSafetyScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            )).toList(),
+            )),
           ],
         ),
       ),

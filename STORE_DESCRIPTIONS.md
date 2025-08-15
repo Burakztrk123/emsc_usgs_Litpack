@@ -1,4 +1,4 @@
-# Store Descriptions - Earthquake Tracker App
+# Store Descriptions - Sismo Alarm App
 
 ## 🤖 Google Play Store
 
@@ -9,7 +9,7 @@ Gerçek zamanlı deprem takibi, offline destek ve akıllı bildirimler
 
 **🌍 Gerçek Zamanlı Deprem Takibi**
 
-Earthquake Tracker, EMSC ve USGS'den gerçek zamanlı deprem verilerini çekerek size en güncel deprem bilgilerini sunar. Offline destek, akıllı bildirimler ve detaylı analizlerle deprem takibini kolaylaştırır.
+Sismo Alarm, EMSC ve USGS'den gerçek zamanlı deprem verilerini çekerek size en güncel deprem bilgilerini sunar. Offline destek, akıllı bildirimler ve detaylı analizlerle deprem takibini kolaylaştırır.
 
 **✨ Temel Özellikler:**
 • 🌐 **Gerçek Zamanlı Veri**: EMSC ve USGS API'lerinden anlık deprem bilgileri

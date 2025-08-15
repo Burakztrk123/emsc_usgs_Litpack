@@ -2,11 +2,11 @@ import 'dart:math';
 import 'dart:developer' as developer;
 import '../models/earthquake.dart';
 import '../models/seismic_activity.dart';
-import 'earthquake_service.dart';
+import 'earthquake_service_real.dart';
 
 class SeismicAnalysisService {
   
-  final EarthquakeService _earthquakeService = EarthquakeService();
+  final EarthquakeServiceReal _earthquakeService = EarthquakeServiceReal();
 
   // Küresel sismik aktivite analizi
   Future<SeismicActivity> getGlobalSeismicActivity() async {

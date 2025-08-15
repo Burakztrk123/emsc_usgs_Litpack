@@ -10,7 +10,7 @@ import '../widgets/source_attribution.dart';
 import 'notification_settings_screen.dart';
 import 'earthquake_report_screen.dart';
 import 'my_reports_screen.dart';
-import 'simple_dashboard_screen.dart';
+import 'seismic_dashboard_screen.dart';
 import 'earthquake_safety_screen.dart';
 import 'earthquake_faq_screen.dart';
 
@@ -35,8 +35,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // Harita pozisyonu için state değişkenleri
   LatLng _mapCenter = const LatLng(39.0, 35.0); // Türkiye merkezi
   double _mapZoom = 5.0;
-  bool _shouldMoveToEarthquake = false;
-  Earthquake? _selectedEarthquake;
   
   // Harita yeniden oluşturma için key
   Key _mapKey = UniqueKey();
@@ -77,12 +75,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     setState(() {
       _mapCenter = LatLng(earthquake.latitude, earthquake.longitude);
       _mapZoom = 14.0; // Daha yakın zoom
-      _shouldMoveToEarthquake = false;
-      _selectedEarthquake = null;
       _mapKey = UniqueKey(); // Haritayı yeniden oluştur
     });
     
-    print('Harita state güncellendi - Yeni merkez: $_mapCenter, Zoom: $_mapZoom');
+    developer.log('Harita state güncellendi - Yeni merkez: $_mapCenter, Zoom: $_mapZoom', name: 'HomeScreen');
   }
 
   bool _isFetching = false; // API call protection
@@ -186,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SimpleDashboardScreen(),
+                      builder: (context) => const SeismicDashboardScreen(),
                     ),
                   );
                   break;
@@ -270,9 +266,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
+          indicatorColor: Colors.green,
           indicatorWeight: 3,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+          labelColor: Colors.green,
+          unselectedLabelColor: Colors.white70,
           tabs: const [
             Tab(icon: Icon(Icons.list), text: 'Liste'),
             Tab(icon: Icon(Icons.map), text: 'Harita'),
@@ -285,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             height: _showFilterOptions ? 80 : 0,
-            color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
             child: _showFilterOptions
                 ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -387,12 +385,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           );
           // Eğer bildirim başarıyla kaydedildiyse, bir mesaj göster
           if (result == true) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Teşekkürler! Deprem bildiriminiz kaydedildi.'),
-                backgroundColor: Colors.green,
-              ),
-            );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Teşekkürler! Deprem bildiriminiz kaydedildi.'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
           }
         },
         backgroundColor: Colors.orange,
@@ -734,14 +734,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           scale: value,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor.withAlpha(25),
+                              color: markerColor.withValues(alpha: 0.8),
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.blue.withAlpha(25),
-                                  blurRadius: 3,
-                                  spreadRadius: 1,
+                                  color: markerColor.withValues(alpha: 0.4),
+                                  blurRadius: 4,
+                                  spreadRadius: 2,
                                 ),
                               ],
                             ),
@@ -839,7 +839,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -994,7 +994,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   icon: const Icon(Icons.map, size: 16),
                                   label: const Text('Haritada Göster'),
                                   onPressed: () async {
-                                    print('Haritada Göster butonuna tıklandı: ${earthquake.place}');
+                                    developer.log('Haritada Göster butonuna tıklandı: ${earthquake.place}', name: 'HomeScreen');
                                     Navigator.pop(context);
                                     
                                     // Harita sekmesine geç

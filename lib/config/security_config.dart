@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:crypto/crypto.dart';
 
 /// Güvenlik yapılandırmaları ve yardımcı fonksiyonlar
 class SecurityConfig {
@@ -147,11 +146,14 @@ class SecurityConfig {
     }
   }
   
-  // Hash oluşturma
+  // Hash oluşturma (basit implementasyon)
   static String createHash(String input) {
     final bytes = utf8.encode(input);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
+    int hash = 0;
+    for (int byte in bytes) {
+      hash = ((hash << 5) - hash + byte) & 0xFFFFFFFF;
+    }
+    return hash.toString();
   }
   
   // Güvenli random string oluşturma

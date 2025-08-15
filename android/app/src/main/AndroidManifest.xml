@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     
     <application
-        android:label="emsc_usgs_mobile"
+        android:label="Sismo Alarm"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
