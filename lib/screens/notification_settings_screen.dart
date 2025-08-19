@@ -17,10 +17,10 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   double _radius = 100.0;
   double _minMagnitude = 4.0;
   LatLng _userLocation = const LatLng(41.0082, 28.9784); // İstanbul varsayılan
-  final TextEditingController _botTokenController = TextEditingController(text: '7965478820:AAGyhJzEPcfmCh2l9QLBewRTeRHUvV1QwS8');
+  final TextEditingController _botTokenController = TextEditingController();
   final TextEditingController _chatIdController = TextEditingController();
   bool _isValidatingToken = false;
-  bool _isTokenValid = true; // Bot token'ın geçerli olduğunu biliyoruz
+  bool _isTokenValid = false;
   
   @override
   void initState() {
@@ -57,9 +57,10 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         _notificationsEnabled = notificationsEnabled;
         _minMagnitude = minMagnitude;
         
-        if (botToken != null) {
-          _botTokenController.text = botToken;
-        }
+        // Token alanını boş bırak - kullanıcı kendi token'ını girecek
+        // if (botToken != null) {
+        //   _botTokenController.text = botToken;
+        // }
         
         if (chatId != null) {
           _chatIdController.text = chatId;

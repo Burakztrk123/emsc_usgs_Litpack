@@ -99,8 +99,7 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
                   _buildMagnitudeDistribution(),
                   const SizedBox(height: 20),
                   
-                  // Ülke Karşılaştırması
-                  _buildCountryComparison(),
+                  // Ülke Karşılaştırması kaldırıldı
                 ],
               ),
             ),
@@ -438,9 +437,17 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
   }
 
   Widget _buildMagnitudeBar(String label, int value, Color color) {
-    final maxValue = (_magnitudeStats!['magnitude_4_5'] as int) > 0 
-        ? (_magnitudeStats!['magnitude_4_5'] as int) 
-        : 10;
+    // Find the maximum value across all magnitude ranges for proper scaling
+    final allValues = [
+      _magnitudeStats!['magnitude_1_2'] as int,
+      _magnitudeStats!['magnitude_2_3'] as int,
+      _magnitudeStats!['magnitude_3_4'] as int,
+      _magnitudeStats!['magnitude_4_5'] as int,
+      _magnitudeStats!['magnitude_5_6'] as int,
+      _magnitudeStats!['magnitude_6_7'] as int,
+      _magnitudeStats!['magnitude_7_plus'] as int,
+    ];
+    final maxValue = allValues.reduce((a, b) => a > b ? a : b).clamp(1, double.infinity);
     final percentage = (value / maxValue).clamp(0.0, 1.0);
     
     return Container(
@@ -501,107 +508,4 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
     );
   }
 
-  Widget _buildCountryComparison() {
-    if (_countryData == null || _globalActivity == null) return const SizedBox();
-    
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ülke Karşılaştırması',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildComparisonItem(
-                    _countryData!.countryName,
-                    _countryData!.currentActivity.totalEarthquakes,
-                    Colors.blue,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'VS',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: _buildComparisonItem(
-                    'Dünya',
-                    _globalActivity!.totalEarthquakes,
-                    Colors.orange,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildComparisonItem(String title, int value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 1,
-            ),
-          ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              '$value',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-              maxLines: 1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              'Deprem',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
