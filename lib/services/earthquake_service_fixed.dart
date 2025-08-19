@@ -10,8 +10,7 @@ class EarthquakeServiceFixed {
   static const String emscApiUrl = 'https://www.seismicportal.eu/fdsnws/event/1/query';
   static const String usgsApiUrl = 'https://earthquake.usgs.gov/fdsnws/event/1/query';
   
-  final DatabaseService _databaseService = DatabaseService();
-  final CacheManager _cacheManager = CacheManager();
+  // Removed unused fields for tree shaking optimization
 
   /// Tüm kaynaklardan deprem verilerini çek (GÜNCEL TARİH + YÜKSEK LİMİT)
   Future<List<Earthquake>> getAllEarthquakes({

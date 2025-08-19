@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import '../models/earthquake.dart';
-import 'database_service.dart';
+// Removed unused import for tree shaking optimization
 import 'cache_manager.dart';
 
 /// SQLite entegrasyonlu ana deprem servisi
@@ -11,7 +11,7 @@ class EarthquakeServiceIntegrated {
   static const String emscApiUrl = 'https://www.seismicportal.eu/fdsnws/event/1/query';
   static const String usgsApiUrl = 'https://earthquake.usgs.gov/fdsnws/event/1/query';
   
-  final DatabaseService _databaseService = DatabaseService();
+  // Removed unused _databaseService field for tree shaking optimization
   final CacheManager _cacheManager = CacheManager();
 
   /// Tüm kaynaklardan deprem verilerini çek (önce cache, sonra API)
@@ -71,45 +71,6 @@ class EarthquakeServiceIntegrated {
       // Hata durumunda boş liste döndür - Cache yok!
       return <Earthquake>[];
     }
-  }
-
-  /// Cache yaşını kontrol et
-  Future<Duration?> _getCacheAge() async {
-    try {
-      final earthquakes = await _databaseService.getEarthquakes(
-        limit: 1,
-        orderBy: 'created_at DESC',
-      );
-      
-      if (earthquakes.isNotEmpty) {
-        // En son kaydedilen verinin yaşını hesapla
-        final lastCacheTime = DateTime.fromMillisecondsSinceEpoch(
-          earthquakes.first.time.millisecondsSinceEpoch
-        );
-        return DateTime.now().difference(lastCacheTime);
-      }
-      
-      return null; // Cache yok
-    } catch (e) {
-      developer.log('Cache yaş kontrolü hatası: $e');
-      return null;
-    }
-  }
-
-  /// Cache'den deprem verilerini al
-  Future<List<Earthquake>> _getCachedEarthquakes({
-    required int limit,
-    required double minMagnitude,
-    required int days,
-  }) async {
-    final startDate = DateTime.now().subtract(Duration(days: days));
-    
-    return await _databaseService.getEarthquakes(
-      limit: limit,
-      startDate: startDate,
-      minMagnitude: minMagnitude,
-      orderBy: 'time DESC',
-    );
   }
 
   /// EMSC API'den deprem verilerini çek
@@ -249,7 +210,8 @@ class EarthquakeServiceIntegrated {
     }
   }
 
-  /// Test deprem verileri (API çalışmadığında)
+  // Removed unused method _getTestEarthquakes for tree shaking optimization
+  /*
   List<Earthquake> _getTestEarthquakes() {
     final now = DateTime.now();
     return [

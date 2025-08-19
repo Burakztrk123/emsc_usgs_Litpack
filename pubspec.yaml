@@ -55,10 +55,10 @@ dependencies:
   # Arka plan işlemleri için
   workmanager: ^0.5.1
   
-  # Grafik ve chart kütüphaneleri
-  fl_chart: ^0.68.0
-  syncfusion_flutter_charts: ^24.1.41
-  syncfusion_flutter_gauges: ^24.1.41
+  # Grafik ve chart kütüphaneleri - REMOVED (unused)
+  # fl_chart: ^0.68.0
+  # syncfusion_flutter_charts: ^24.1.41
+  # syncfusion_flutter_gauges: ^24.1.41
 
 dev_dependencies:
   flutter_test:
@@ -116,17 +116,10 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
 # App Icon Configuration
-flutter_icons:
+flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/images/sismo_alarm_logo.png"
   min_sdk_android: 21
-  web:
-    generate: true
-    image_path: "assets/images/sismo_alarm_logo.png"
-  windows:
-    generate: true
-    image_path: "assets/images/sismo_alarm_logo.png"
-  macos:
-    generate: true
-    image_path: "assets/images/sismo_alarm_logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/sismo_alarm_logo.png"

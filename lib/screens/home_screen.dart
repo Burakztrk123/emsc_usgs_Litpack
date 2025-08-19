@@ -409,15 +409,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           );
           // Eğer bildirim başarıyla kaydedildiyse, bir mesaj göster
-          if (result == true) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Teşekkürler! Deprem bildiriminiz kaydedildi.'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
+          if (result == true && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Teşekkürler! Deprem bildiriminiz kaydedildi.'),
+                backgroundColor: Colors.green,
+              ),
+            );
           }
         },
         backgroundColor: Colors.orange,

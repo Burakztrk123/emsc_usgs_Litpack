@@ -79,7 +79,7 @@ class TelegramService {
       
       return response.statusCode == 200;
     } catch (e) {
-      developer.log('Telegram bildirimi gönderildi: ${message}', name: 'TelegramService');
+      developer.log('Telegram bildirimi gönderildi: $message', name: 'TelegramService');
       return false;
     }
   }

@@ -103,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen>
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -112,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Image.asset(
-                            'assets/images/sismo_alarm_logo.png',
+                            'assets/images/app_icon.png',
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               // Logo yoksa fallback icon

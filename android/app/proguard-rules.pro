@@ -69,8 +69,18 @@
     public static <fields>;
 }
 
+# Google Play Core
+-keep class com.google.android.play.core.** { *; }
+-keep class com.google.android.play.core.splitcompat.** { *; }
+-keep class com.google.android.play.core.splitinstall.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
+
+# Flutter Play Store Split
+-keep class io.flutter.app.FlutterPlayStoreSplitApplication { *; }
+-keep class io.flutter.embedding.engine.deferredcomponents.** { *; }
+
 # Earthquake Tracker specific rules
--keep class com.yourcompany.earthquaketracker.** { *; }
+-keep class com.burakztrk123.sismoalarm.** { *; }
 
 # Keep model classes (if using reflection)
 -keep class * extends java.lang.Object {

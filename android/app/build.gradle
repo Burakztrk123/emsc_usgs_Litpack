@@ -9,6 +9,12 @@ def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+} else {
+    // Fallback values if key.properties doesn't exist
+    keystoreProperties['storePassword'] = 'sismoalarm2024'
+    keystoreProperties['keyPassword'] = 'sismoalarm2024'
+    keystoreProperties['keyAlias'] = 'upload'
+    keystoreProperties['storeFile'] = 'upload-keystore.jks'
 }
 
 android {
@@ -38,20 +44,20 @@ android {
 
     signingConfigs {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword keystoreProperties['storePassword']
+            keyAlias 'upload'
+            keyPassword 'sismoalarm2024'
+            storeFile file('upload-keystore.jks')
+            storePassword 'sismoalarm2024'
         }
     }
     buildTypes {
         release {
             signingConfig signingConfigs.release
             
-            // Enable ProGuard/R8 for code shrinking and obfuscation
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Disable ProGuard/R8 for initial release
+            minifyEnabled false
+            shrinkResources false
+            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             
             // Optimize for size
             zipAlignEnabled true
