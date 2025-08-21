@@ -69,15 +69,14 @@
     public static <fields>;
 }
 
-# Google Play Core
--keep class com.google.android.play.core.** { *; }
--keep class com.google.android.play.core.splitcompat.** { *; }
--keep class com.google.android.play.core.splitinstall.** { *; }
--keep class com.google.android.play.core.tasks.** { *; }
+# Disable Google Play Core - not needed for basic app
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.app.FlutterPlayStoreSplitApplication
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
 
-# Flutter Play Store Split
--keep class io.flutter.app.FlutterPlayStoreSplitApplication { *; }
--keep class io.flutter.embedding.engine.deferredcomponents.** { *; }
+# Remove Flutter Play Store Split references
+-keep class !io.flutter.app.FlutterPlayStoreSplitApplication,io.flutter.app.** { *; }
+-keep class !io.flutter.embedding.engine.deferredcomponents.**,io.flutter.embedding.engine.** { *; }
 
 # Earthquake Tracker specific rules
 -keep class com.burakztrk123.sismoalarm.** { *; }

@@ -13,7 +13,7 @@ class LocationService {
   static const double _defaultRadius = 100.0; // km cinsinden
   
   // Kullanıcının konumunu al
-  static Future<Position> getCurrentLocation() async {
+  static Future<Position?> getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -68,9 +68,20 @@ class LocationService {
   }
   
   // İki konum arasındaki mesafeyi hesapla (km cinsinden)
-  static double calculateDistance(LatLng point1, LatLng point2) {
+  static double calculateDistance(dynamic point1, double lat2, double lng2) {
+    LatLng latLng1;
+    
+    if (point1 is Position) {
+      latLng1 = LatLng(point1.latitude, point1.longitude);
+    } else if (point1 is LatLng) {
+      latLng1 = point1;
+    } else {
+      throw ArgumentError('point1 must be Position or LatLng');
+    }
+    
+    final latLng2 = LatLng(lat2, lng2);
     const Distance distance = Distance();
-    return distance.as(LengthUnit.Kilometer, point1, point2);
+    return distance.as(LengthUnit.Kilometer, latLng1, latLng2);
   }
   
   // Deprem kullanıcının bildirim yarıçapı içinde mi kontrol et
@@ -78,8 +89,7 @@ class LocationService {
     final userLocation = await getSavedUserLocation();
     final radius = await getSavedNotificationRadius();
     
-    final earthquakeLocation = LatLng(eqLat, eqLng);
-    final distance = calculateDistance(userLocation, earthquakeLocation);
+    final distance = calculateDistance(userLocation, eqLat, eqLng);
     
     return distance <= radius;
   }

@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import '../models/earthquake.dart';
-// Removed unused import for tree shaking optimization
-import 'cache_manager.dart';
+// Cache manager import removed - not used in production mode
 
 /// SQLite entegrasyonlu ana deprem servisi
 /// Bu servis API'den veri çeker, veritabanına kaydeder ve offline erişim sağlar
@@ -11,8 +10,7 @@ class EarthquakeServiceIntegrated {
   static const String emscApiUrl = 'https://www.seismicportal.eu/fdsnws/event/1/query';
   static const String usgsApiUrl = 'https://earthquake.usgs.gov/fdsnws/event/1/query';
   
-  // Removed unused _databaseService field for tree shaking optimization
-  final CacheManager _cacheManager = CacheManager();
+  // Cache manager removed - production mode uses live API only
 
   /// Tüm kaynaklardan deprem verilerini çek (önce cache, sonra API)
   Future<List<Earthquake>> getAllEarthquakes({
@@ -210,63 +208,7 @@ class EarthquakeServiceIntegrated {
     }
   }
 
-  // Removed unused method _getTestEarthquakes for tree shaking optimization
-  /*
-  List<Earthquake> _getTestEarthquakes() {
-    final now = DateTime.now();
-    return [
-      Earthquake(
-        id: 'test_1',
-        magnitude: 5.2,
-        place: 'Ege Denizi',
-        time: now.subtract(Duration(hours: 2)),
-        latitude: 37.9755,
-        longitude: 27.3711,
-        depth: 12.5,
-        source: 'TEST',
-      ),
-      Earthquake(
-        id: 'test_2', 
-        magnitude: 4.8,
-        place: 'Marmara Denizi',
-        time: now.subtract(Duration(hours: 5)),
-        latitude: 40.7589,
-        longitude: 29.4013,
-        depth: 8.2,
-        source: 'TEST',
-      ),
-      Earthquake(
-        id: 'test_3',
-        magnitude: 6.1,
-        place: 'Doğu Anadolu Fay Hattı',
-        time: now.subtract(Duration(hours: 12)),
-        latitude: 38.7312,
-        longitude: 39.4625,
-        depth: 15.8,
-        source: 'TEST',
-      ),
-      Earthquake(
-        id: 'test_4',
-        magnitude: 4.3,
-        place: 'Akdeniz',
-        time: now.subtract(Duration(hours: 18)),
-        latitude: 36.2048,
-        longitude: 32.6593,
-        depth: 22.1,
-        source: 'TEST',
-      ),
-      Earthquake(
-        id: 'test_5',
-        magnitude: 5.7,
-        place: 'Kuzey Anadolu Fay Hattı',
-        time: now.subtract(Duration(days: 1)),
-        latitude: 40.8533,
-        longitude: 30.3788,
-        depth: 18.7,
-        source: 'TEST',
-      ),
-    ];
-  }
+  // Test data removed for production
 
   /// Duplikatları temizle
   List<Earthquake> _removeDuplicates(List<Earthquake> earthquakes) {
@@ -286,19 +228,19 @@ class EarthquakeServiceIntegrated {
     return [];
   }
 
-  /// Cache durumunu kontrol et
-  Future<CacheStatus> getCacheStatus() async {
-    return await _cacheManager.getCacheStatus();
+  /// Cache durumunu kontrol et (devre dışı)
+  Future<Map<String, dynamic>> getCacheStatus() async {
+    return {'enabled': false, 'message': 'Cache devre dışı'};
   }
 
-  /// Cache'i temizle
+  /// Cache'i temizle (devre dışı)
   Future<bool> clearCache() async {
-    return await _cacheManager.clearCache();
+    return true;
   }
 
-  /// Cache'i optimize et
+  /// Cache'i optimize et (devre dışı)
   Future<void> optimizeCache() async {
-    await _cacheManager.optimizeCache();
+    // Cache devre dışı
   }
 
   /// Offline modda mı kontrol et

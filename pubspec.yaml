@@ -55,6 +55,9 @@ dependencies:
   # Arka plan işlemleri için
   workmanager: ^0.5.1
   
+  # Yerel bildirimler için
+  flutter_local_notifications: ^17.2.2
+  
   # Grafik ve chart kütüphaneleri - REMOVED (unused)
   # fl_chart: ^0.68.0
   # syncfusion_flutter_charts: ^24.1.41

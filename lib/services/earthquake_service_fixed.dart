@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import '../models/earthquake.dart';
-import 'database_service.dart';
-import 'cache_manager.dart';
+// Unused imports removed for optimization
 
 /// GÜNCEL TARİH VE YÜKSEK LİMİT İLE DÜZELTILMIŞ API SERVİSİ
 class EarthquakeServiceFixed {

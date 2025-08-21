@@ -73,10 +73,12 @@ class _EarthquakeReportScreenState extends State<EarthquakeReportScreen> {
   Future<void> _getCurrentLocation() async {
     try {
       final position = await LocationService.getCurrentLocation();
-      setState(() {
-        _currentPosition = position;
-        _locationController.text = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
-      });
+      if (position != null) {
+        setState(() {
+          _currentPosition = position;
+          _locationController.text = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+        });
+      }
     } catch (e) {
       developer.log('Konum alınamadı: $e', name: 'EarthquakeReportScreen');
     }

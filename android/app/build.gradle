@@ -25,6 +25,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -54,7 +55,7 @@ android {
         release {
             signingConfig signingConfigs.release
             
-            // Disable ProGuard/R8 for initial release
+            // Disable ProGuard/R8 to avoid missing class issues
             minifyEnabled false
             shrinkResources false
             // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -79,4 +80,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }

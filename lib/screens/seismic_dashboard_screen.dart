@@ -15,7 +15,7 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
   bool _isLoading = true;
   SeismicActivity? _globalActivity;
   SeismicTrend? _seismicTrend;
-  CountrySeismicData? _countryData;
+  // CountrySeismicData? _countryData; // Unused field removed
   Map<String, dynamic>? _magnitudeStats;
   String _selectedCountry = 'TR';
   String _selectedPeriod = '30';
@@ -45,7 +45,7 @@ class _SeismicDashboardScreenState extends State<SeismicDashboardScreen> {
         setState(() {
           _globalActivity = results[0] as SeismicActivity?;
           _seismicTrend = results[1] as SeismicTrend?;
-          _countryData = results[2] as CountrySeismicData?;
+          // _countryData = results[2] as CountrySeismicData?; // Removed unused field
           _magnitudeStats = results[3] as Map<String, dynamic>?;
           _isLoading = false;
         });
